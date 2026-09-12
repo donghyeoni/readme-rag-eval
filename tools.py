@@ -53,7 +53,10 @@ QUERY_DB = {
         "프로젝트 메타데이터에 SELECT 쿼리를 실행한다. 스키마: "
         "repos(name, language, domain, started, ended, duration_days, summary), "
         "metrics(repo, name, condition, baseline, value, unit). "
-        "metrics.name은 'PSNR' | 'accuracy' | 'MSE' | 'EbNo' | 'match_rate' 등, "
+        "metrics.name에 있는 값은 이게 전부다: PSNR, accuracy, MSE, EbNo, "
+        "coding_gain, pilot_penalty, match_rate, clip_rate, saturation_rate. "
+        "**여기 없는 수치(파라미터 수, 데이터셋 장수, BER, 표 엔트리 수 등)는 "
+        "DB에 없고 문서에만 있으므로 search_docs를 써야 한다.** "
         "metrics.condition은 측정 조건을 적은 한국어 자유 서술이다. "
         "**값, 목록, 순위**를 묻는 질문에 쓴다. 수치뿐 아니라 "
         "**언어, 도메인, 기간 같은 비수치 속성으로 거르는 질문도 포함**한다. "
@@ -104,6 +107,46 @@ _FORBIDDEN = re.compile(
 )
 
 
+def _inventory(con: sqlite3.Connection) -> dict:
+    """DB에 실제로 무엇이 있는지. 없는 것을 묻고 있음을 모델이 알아채게 한다."""
+    return {
+        "metrics.name에 실제로 있는 값": [
+            r[0] for r in con.execute("SELECT DISTINCT name FROM metrics ORDER BY name")],
+        "repos.name": [r[0] for r in con.execute("SELECT name FROM repos ORDER BY name")],
+    }
+
+
+def _fallback(con: sqlite3.Connection, sql: str, cols: list[str]) -> dict:
+    """조건을 벗긴 결과를 대신 돌려준다.
+
+    metrics는 63행뿐이라 통째로 줘도 부담이 없다. 모델이 WHERE를 잘못 써서
+    헛돈 경우가 대부분이고, 자료는 늘 손 닿는 곳에 있었다(실측: db 오답 9건
+    전부 레포 전체를 긁으면 답이 그 안에 있었다).
+    """
+    known = [r[0] for r in con.execute("SELECT name FROM repos")]
+    hit = [r for r in known if r.lower() in sql.lower()]
+    if hit:
+        marks = ",".join("?" * len(hit))
+        cur = con.execute(
+            f"SELECT repo, name, condition, baseline, value, unit "
+            f"FROM metrics WHERE repo IN ({marks}) ORDER BY repo, name", hit)
+        scope = f"{', '.join(hit)} 의 모든 metrics 행"
+    else:
+        cur = con.execute(
+            "SELECT repo, name, condition, baseline, value, unit "
+            "FROM metrics ORDER BY repo, name")
+        scope = "metrics 전체"
+    return {
+        "columns": cols, "rows": [],
+        "note": (f"요청한 조건으로는 0행이라, 조건을 벗기고 {scope}을 대신 붙였습니다. "
+                 f"아래 fallback_rows에서 직접 고르세요. 여기에도 없으면 그 수치는 "
+                 f"DB가 아니라 문서에 있는 것이므로 search_docs를 쓰세요."),
+        "fallback_columns": [d[0] for d in cur.description],
+        "fallback_rows": cur.fetchall(),
+        "db에_있는_것": _inventory(con),
+    }
+
+
 def query_db(sql: str) -> str:
     """LLM이 생성한 SQL을 그대로 실행하므로 두 겹으로 막는다.
 
@@ -123,15 +166,10 @@ def query_db(sql: str) -> str:
         cols = [d[0] for d in cur.description]
         rows = cur.fetchall()[:50]
         if not rows:
-            # 빈 결과를 그냥 넘기면 모델이 "데이터가 없다"고 단정하고 끝낸다
-            # (실측 2건). 무엇을 다시 해 볼지 같이 알려 준다.
-            return json.dumps({
-                "columns": cols, "rows": [],
-                "hint": ("조건에 맞는 행이 없습니다. 포기하지 말고 조건을 넓혀 "
-                         "다시 조회하세요. condition은 자유 서술이라 정확히 일치하지 "
-                         "않을 수 있으니 LIKE '%키워드%'를 쓰거나, WHERE 없이 "
-                         "해당 repo의 행을 전부 본 뒤 고르는 편이 확실합니다."),
-            }, ensure_ascii=False)
+            # 빈 결과에 "다시 조회하라"고 적어 보냈더니 14B조차 그 문장을 읽고
+            # "결과가 없습니다"로 끝냈다(실측). 지시로는 안 된다는 뜻이라,
+            # 이번엔 하네스가 직접 조건을 벗겨 다시 조회하고 그 자료를 붙인다.
+            return json.dumps(_fallback(con, stripped, cols), ensure_ascii=False)
         return json.dumps({"columns": cols, "rows": rows}, ensure_ascii=False)
     except Exception as e:
         return f"ERROR: {e}"
