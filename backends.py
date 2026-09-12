@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import re
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -30,6 +31,68 @@ class Reply:
     input_tokens: int = 0
     output_tokens: int = 0
     latency_s: float = 0.0
+    recovered_calls: int = 0        # 본문에서 건져낸 도구 호출 수
+
+
+# --------------------------------------------------------------------------
+# 새어 나온 도구 호출 복구
+# --------------------------------------------------------------------------
+_LEAK = re.compile(
+    r'\{\s*"name"\s*:\s*"(?P<name>[A-Za-z_][A-Za-z0-9_]*)"\s*,'
+    r'\s*"(?:arguments|parameters|input)"\s*:\s*(?P<args>\{)',
+)
+
+
+def recover_tool_calls(text: str, known: set[str]) -> list[dict]:
+    """본문에 섞여 나온 도구 호출을 건져낸다.
+
+    작은 모델은 `<tool_call>` 태그를 온전히 못 내서 서버 파서가 호출을 놓치고,
+    호출 JSON이 그대로 본문에 실려 온다(실측: `leton {"name": ...} </tool_call>`).
+    호출 의도는 분명한데 형식만 깨진 경우라 버리지 않고 복구한다.
+
+    `known`에 있는 도구 이름만 받아들여, 모델이 지어낸 이름은 걸러낸다.
+
+    그리고 `tool_call` 태그 잔해가 있을 때만 복구한다. 이 조건이 없으면
+    모델이 근거로 인용한 JSON("근거: {\"name\": \"query_db\", ...}")이나
+    ```json 펜스에 넣은 예시까지 호출로 오인한다 — 실측 답변에서 오탐 2건을
+    냈고, 이 조건을 넣어 0건이 됐다.
+    """
+    if "tool_call" not in text.lower():
+        return []
+    calls: list[dict] = []
+    for m in _LEAK.finditer(text):
+        if m.group("name") not in known:
+            continue
+        # 인자 JSON은 중괄호 깊이를 세어 끝을 찾는다(정규식으로는 중첩을 못 센다)
+        start = m.start("args")
+        depth, end, in_str, esc = 0, None, False, False
+        for i, ch in enumerate(text[start:], start):
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    end = i + 1
+                    break
+        if end is None:
+            continue
+        try:
+            args = json.loads(text[start:end])
+        except json.JSONDecodeError:
+            continue
+        calls.append({"id": f"recovered_{len(calls)}",
+                      "name": m.group("name"), "input": args})
+    return calls
 
 
 class Backend:
@@ -195,11 +258,19 @@ class OpenAIToolBackend(Backend):
             calls.append({"id": tc.get("id") or f"call_{len(calls)}",
                           "name": tc["function"]["name"], "input": args})
 
+        # 서버 파서가 놓친 호출을 본문에서 건져낸다. 실제로 20문항 중 2건이
+        # 이렇게 새어 나와 "도구 미사용"으로 잡혔다.
+        recovered = 0
+        if not calls and msg.get("content"):
+            calls = recover_tool_calls(msg["content"], {t["name"] for t in tools})
+            recovered = len(calls)
+
         finish = choice.get("finish_reason") or "stop"
         stop = "tool_use" if calls else {"stop": "end_turn", "length": "max_tokens"}.get(finish, finish)
         usage = out.get("usage") or {}
         return Reply(
-            text=msg.get("content") or "", tool_calls=calls, stop_reason=stop,
+            text="" if recovered else (msg.get("content") or ""),
+            tool_calls=calls, stop_reason=stop, recovered_calls=recovered,
             input_tokens=usage.get("prompt_tokens", 0),
             output_tokens=usage.get("completion_tokens", 0),
             latency_s=dt,

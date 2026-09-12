@@ -10,6 +10,7 @@ import sys
 from dataclasses import dataclass, field
 
 from backends import Backend, Reply, make_backend
+from verifier import unsupported_numbers, warning
 from tools import DISPATCH, TOOLSETS
 
 _BASE = (
@@ -39,6 +40,8 @@ class Trace:
     output_tokens: int = 0
     latency_s: float = 0.0
     stop_reason: str = ""
+    recovered_calls: int = 0      # 본문에서 건져낸 도구 호출 수
+    verifier_hits: int = 0        # 근거 없는 수치로 되물은 횟수
 
     @property
     def first_tool(self) -> str | None:
@@ -72,10 +75,11 @@ class Trace:
 
 def ask(question: str, backend: Backend, toolset: str = "C",
         max_turns: int = 6, expand_query: bool = True,
-        system: str = SYSTEM) -> tuple[str, Trace]:
+        system: str = SYSTEM, verify: bool = True) -> tuple[str, Trace]:
     tools = TOOLSETS[toolset]
     messages: list[dict] = [{"role": "user", "text": question}]
     tr = Trace()
+    rechecked = False      # 되묻기는 한 번만 (무한 왕복 방지)
 
     for _ in range(max_turns):
         reply: Reply = backend.send(system, messages, tools)
@@ -84,10 +88,23 @@ def ask(question: str, backend: Backend, toolset: str = "C",
         tr.output_tokens += reply.output_tokens
         tr.latency_s += reply.latency_s
         tr.stop_reason = reply.stop_reason
+        tr.recovered_calls += reply.recovered_calls
 
         if reply.stop_reason == "refusal":       # 항상 먼저 확인
             return "REFUSED", tr
         if not reply.tool_calls:
+            # 답을 내기 전에, 쓰인 수치가 도구 출력에 실제로 있었는지 대조한다.
+            # 도구가 값을 돌려줬는데도 생성 단계에서 바뀌는 일이 실제로 있었다.
+            if verify and not rechecked and tr.calls:
+                bad = unsupported_numbers(
+                    reply.text, [c["output"] for c in tr.calls if not c["is_error"]])
+                if bad:
+                    tr.verifier_hits += len(bad)
+                    rechecked = True
+                    messages.append({"role": "assistant", "text": reply.text,
+                                     "tool_calls": []})
+                    messages.append({"role": "user", "text": warning(bad)})
+                    continue
             return reply.text, tr
 
         messages.append({"role": "assistant", "text": reply.text,

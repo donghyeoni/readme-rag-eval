@@ -57,6 +57,47 @@ def tokenize(s: str) -> list[str]:
     return words + bigrams
 
 
+def flatten_tables(text: str, max_rows: int = 40) -> list[str]:
+    """마크다운 표를 행 하나에 자족적인 문장 하나로 편다.
+
+    큰 표를 그대로 넘기면 모델이 행과 열을 어긋나게 읽는다(실측: 임펄스 잡음의
+    최적 필터를 median 43.92 대신 Bilateral C=75라고 답했다). 색인은 건드리지
+    않고 도구가 돌려주는 표현만 바꾼다 — 검색 결과 순위는 그대로 둔 채
+    읽기 쉬움만 더하는 것이다.
+
+        | Noised image | Median | Averaging |
+        | Impulse p=0.05 | 43.92 | 26.19 |
+        -> "Impulse p=0.05 | Median=43.92, Averaging=26.19"
+    """
+    lines = text.splitlines()
+    out: list[str] = []
+    i = 0
+    while i < len(lines):
+        if not lines[i].strip().startswith("|"):
+            i += 1
+            continue
+        block = []
+        while i < len(lines) and lines[i].strip().startswith("|"):
+            block.append(lines[i])
+            i += 1
+        if len(block) < 3:                       # 헤더 + 구분선 + 데이터 1행 이상
+            continue
+        cells = lambda ln: [c.strip() for c in ln.strip().strip("|").split("|")]
+        header = cells(block[0])
+        if not re.match(r"^[\s|:-]+$", block[1]):   # 두 번째 줄이 구분선이어야 표
+            continue
+        for row in block[2:]:
+            vals = cells(row)
+            if not vals or not vals[0]:
+                continue
+            pairs = [f"{h}={v}" for h, v in zip(header[1:], vals[1:]) if v]
+            if pairs:
+                out.append(f"{vals[0]} | " + ", ".join(pairs))
+            if len(out) >= max_rows:
+                return out
+    return out
+
+
 class Retriever:
     """BM25 검색기.
 

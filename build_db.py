@@ -4,6 +4,7 @@
 디버깅에 더 오래 걸리고, 틀렸을 때 조용히 틀린다.
 """
 import sqlite3
+from datetime import date
 
 DB = "meta.db"
 
@@ -12,7 +13,9 @@ DROP TABLE IF EXISTS metrics;
 DROP TABLE IF EXISTS repos;
 CREATE TABLE repos (
   name TEXT PRIMARY KEY, language TEXT, domain TEXT,
-  started TEXT, ended TEXT, summary TEXT
+  started TEXT, ended TEXT,          -- 'YYYY-MM-DD' 문자열
+  duration_days INTEGER,             -- ended - started. 아래 주석 참고
+  summary TEXT
 );
 CREATE TABLE metrics (
   repo TEXT REFERENCES repos(name),
@@ -143,7 +146,15 @@ METRICS = [
 def main() -> None:
     con = sqlite3.connect(DB)
     con.executescript(SCHEMA)
-    con.executemany("INSERT INTO repos VALUES (?,?,?,?,?,?)", REPOS)
+    # 날짜를 TEXT로만 두면 LLM이 `ORDER BY ended - started`를 자연스럽게 쓰는데,
+    # SQLite는 문자열을 숫자로 조용히 강제변환해 에러 없이 틀린 답을 준다.
+    # (실제로 평가에서 그 오답이 나왔다.) 기간을 미리 계산해 컬럼으로 둔다.
+    rows = [
+        (name, lang, dom, st, en,
+         (date.fromisoformat(en) - date.fromisoformat(st)).days, summary)
+        for name, lang, dom, st, en, summary in REPOS
+    ]
+    con.executemany("INSERT INTO repos VALUES (?,?,?,?,?,?,?)", rows)
     con.executemany("INSERT INTO metrics VALUES (?,?,?,?,?,?)", METRICS)
     con.commit()
     n_repo = con.execute("SELECT COUNT(*) FROM repos").fetchone()[0]
