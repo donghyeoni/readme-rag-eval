@@ -52,15 +52,21 @@ def recover_tool_calls(text: str, known: set[str]) -> list[dict]:
 
     `known`에 있는 도구 이름만 받아들여, 모델이 지어낸 이름은 걸러낸다.
 
-    그리고 `tool_call` 태그 잔해가 있을 때만 복구한다. 이 조건이 없으면
-    모델이 근거로 인용한 JSON("근거: {\"name\": \"query_db\", ...}")이나
-    ```json 펜스에 넣은 예시까지 호출로 오인한다 — 실측 답변에서 오탐 2건을
-    냈고, 이 조건을 넣어 0건이 됐다.
+    처음엔 `tool_call` 태그 잔해가 있을 때만 복구했는데, 태그 없이 다른 쓰레기가
+    붙는 변종(실측: `iNdEx {"name": "query_db", ...}`)을 놓쳤다. 태그 대신
+    **코드펜스 밖일 것**만 요구한다. 오탐 걱정이 줄어드는 이유는 호출자가
+    파싱된 호출이 하나도 없을 때만 이 함수를 부르기 때문이다 — 모델이 한 번도
+    조회하지 않고 근거를 인용할 일은 없다.
     """
-    if "tool_call" not in text.lower():
-        return []
+    fences: list[tuple[int, int]] = []
+    marks = [i for i in range(len(text)) if text.startswith("```", i)]
+    for a, b in zip(marks[::2], marks[1::2]):
+        fences.append((a, b + 3))
+
     calls: list[dict] = []
     for m in _LEAK.finditer(text):
+        if any(a <= m.start() < b for a, b in fences):
+            continue                      # ```json 예시는 호출이 아니다
         if m.group("name") not in known:
             continue
         # 인자 JSON은 중괄호 깊이를 세어 끝을 찾는다(정규식으로는 중첩을 못 센다)

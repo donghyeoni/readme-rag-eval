@@ -14,6 +14,10 @@ from retriever import Retriever, flatten_tables
 
 DB = "meta.db"
 
+# 폴백이 붙일 수 있는 최대 글자 수. 8192 토큰 창에서 검색 결과·대화와
+# 함께 들어가야 하므로 여유를 둔다.
+FALLBACK_CHAR_BUDGET = 3500
+
 _r: Retriever | None = None
 
 
@@ -155,13 +159,28 @@ def _fallback(con: sqlite3.Connection, sql: str, cols: list[str]) -> dict:
             "SELECT repo, name, condition, baseline, value, unit "
             "FROM metrics ORDER BY repo, name")
         scope = "metrics 전체"
+    all_rows = cur.fetchall()
+    # 전부 붙이면 검색 결과와 겹쳐 컨텍스트를 넘긴다. 실측에서 두 문항이
+    # "maximum context length is 8192 tokens" 400으로 답변조차 못 받았다.
+    # 글자 예산 안에서 자르고, 잘랐다는 사실을 모델에게 알린다.
+    kept, budget = [], FALLBACK_CHAR_BUDGET
+    for row in all_rows:
+        cost = len(str(row))
+        if budget - cost < 0:
+            break
+        budget -= cost
+        kept.append(row)
+    note = (f"요청한 조건으로는 0행이라, 조건을 벗기고 {scope}을 대신 붙였습니다. "
+            f"아래 fallback_rows에서 직접 고르세요. 여기에도 없으면 그 수치는 "
+            f"DB가 아니라 문서에 있는 것이므로 search_docs를 쓰세요.")
+    if len(kept) < len(all_rows):
+        note += (f" (분량 때문에 {len(all_rows)}행 중 {len(kept)}행만 실었습니다. "
+                 f"원하는 것이 없으면 repo나 name으로 좁혀 다시 조회하세요.)")
     return {
         "columns": cols, "rows": [],
-        "note": (f"요청한 조건으로는 0행이라, 조건을 벗기고 {scope}을 대신 붙였습니다. "
-                 f"아래 fallback_rows에서 직접 고르세요. 여기에도 없으면 그 수치는 "
-                 f"DB가 아니라 문서에 있는 것이므로 search_docs를 쓰세요."),
+        "note": note,
         "fallback_columns": [d[0] for d in cur.description],
-        "fallback_rows": cur.fetchall(),
+        "fallback_rows": kept,
         "db에_있는_것": _inventory(con),
     }
 
