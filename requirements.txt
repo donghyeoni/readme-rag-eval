@@ -1,0 +1,7 @@
+rank_bm25>=0.2.2
+
+# API 트랙을 쓸 때만 필요
+anthropic>=0.40.0
+
+# GPU 서버를 JupyterHub 커널로 제어할 때만 필요 (scripts/serve_vllm.py)
+websocket-client>=1.7.0

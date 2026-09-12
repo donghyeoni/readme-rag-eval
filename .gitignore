@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+*.key
+meta.db
+results/raw/
+docs/*.md
+!docs/.gitkeep
