@@ -3,7 +3,7 @@ d1,db,rasr-region-adaptive-sr,vanilla-rnn-fpga-quantization|yopar-edge-service|r
 d6,db,vanilla-rnn-fpga-quantization,vanilla-rnn-fpga-quantization,1
 d8,db,yopar-attribute-recognition,yopar-edge-service|yopar-attribute-recognition|vanilla-rnn-fpga-quantization,1
 d9,db,digital-modulation-ber,digital-modulation-ber|yopar-attribute-recognition|vanilla-rnn-fpga-quantization,1
-d10,db,gaps-uav-restoration,vanilla-rnn-fpga-quantization|yopar-attribute-recognition,0
+d10,db,gaps-uav-restoration,vanilla-rnn-fpga-quantization|yopar-attribute-recognition|rasr-region-adaptive-sr,0
 s1,docs,gaps-uav-restoration,vanilla-rnn-fpga-quantization|agv-grid-localization,0
 s2,docs,tre-deepfake-detection,yopar-edge-service|vanilla-rnn-fpga-quantization,0
 s3,docs,rasr-region-adaptive-sr,vanilla-rnn-fpga-quantization|yopar-edge-service|yopar-attribute-recognition,0

@@ -120,6 +120,7 @@ def ask(question: str, backend: Backend, toolset: str = "C",
             else:
                 if tc["name"] == "search_docs":
                     args["expand_query"] = expand_query
+                    args.setdefault("question", question)
                 try:
                     out = DISPATCH[tc["name"]](**args)
                     err = out.startswith("ERROR")

@@ -89,8 +89,27 @@ TOOLSETS = {
 
 
 def search_docs(query: str, k: int = 5, expand_query: bool = True,
-                flatten: bool = True) -> str:
-    hits = retriever(expand_query).search(query, k=k or 5)
+                flatten: bool = True, question: str | None = None) -> str:
+    """모델이 정한 검색어로 찾는다.
+
+    `question`(원 질문)이 있으면 검색어에 합쳐서 던진다. 모델이 줄여 쓴 검색어가
+    원문보다 못 찾는 경우가 실제로 있었다 — 검색 실패 4건 중 3건이 질문 원문으로는
+    상위 3개 안에 들어왔다. 검색기는 결정적이므로 이건 모델이 아니라 질의어 문제다.
+    """
+    k = k or 5
+    r = retriever(expand_query)
+    hits = r.search(query, k=k)
+    if question and question.strip() != query.strip():
+        # 두 검색어를 이어 붙이면 서로를 밀어낸다(실측: s11이 오히려 떨어졌다).
+        # 따로 돌려 번갈아 섞으면 각 검색어의 1위가 반드시 살아남는다.
+        merged, seen = [], set()
+        for a, b in zip(hits, r.search(question, k=k)):
+            for h in (a, b):
+                key = (h["repo"], h["title"])
+                if key not in seen:
+                    seen.add(key)
+                    merged.append(h)
+        hits = merged[:k]
     if flatten:
         # 표가 든 문단은 행 단위로 편 것을 함께 준다. 원문은 그대로 두므로
         # 모델이 어느 쪽을 봐도 되고, 행/열을 어긋나게 읽을 여지만 줄인다.
