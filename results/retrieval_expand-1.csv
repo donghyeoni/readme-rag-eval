@@ -1,0 +1,16 @@
+﻿id,route,gold,top_repos,hit
+d1,db,rasr-region-adaptive-sr,vanilla-rnn-fpga-quantization|rasr-region-adaptive-sr|gaps-uav-restoration,1
+d6,db,vanilla-rnn-fpga-quantization,vanilla-rnn-fpga-quantization,1
+d8,db,yopar-attribute-recognition,yopar-attribute-recognition|yopar-edge-service|vanilla-rnn-fpga-quantization,1
+d9,db,digital-modulation-ber,digital-modulation-ber|yopar-attribute-recognition|vanilla-rnn-fpga-quantization,1
+d10,db,gaps-uav-restoration,gaps-uav-restoration|vanilla-rnn-fpga-quantization|yopar-attribute-recognition,1
+s1,docs,gaps-uav-restoration,gaps-uav-restoration|digital-modulation-ber|robust-image-classification,1
+s2,docs,tre-deepfake-detection,yopar-edge-service|vanilla-rnn-fpga-quantization|tre-deepfake-detection,1
+s3,docs,rasr-region-adaptive-sr,vanilla-rnn-fpga-quantization|yopar-edge-service|rasr-region-adaptive-sr,1
+s4,docs,vanilla-rnn-fpga-quantization,vanilla-rnn-fpga-quantization|yopar-edge-service,1
+s5,docs,vanilla-rnn-fpga-quantization,vanilla-rnn-fpga-quantization|yopar-edge-service,1
+s6,docs,depth16-rgb-mapping,depth16-rgb-mapping|vanilla-rnn-fpga-quantization|digital-modulation-ber,1
+s7,docs,robust-image-classification,vanilla-rnn-fpga-quantization|yopar-edge-service|robust-image-classification,1
+s8,docs,agv-grid-localization,agv-grid-localization|digital-modulation-ber|vanilla-rnn-fpga-quantization,1
+s9,docs,yopar-edge-service,yopar-edge-service|yopar-attribute-recognition|vanilla-rnn-fpga-quantization,1
+s10,docs,jpeg-dct-compression,vanilla-rnn-fpga-quantization|jpeg-dct-compression,1
