@@ -163,6 +163,16 @@ def _fallback(con: sqlite3.Connection, sql: str, cols: list[str]) -> dict:
     # 전부 붙이면 검색 결과와 겹쳐 컨텍스트를 넘긴다. 실측에서 두 문항이
     # "maximum context length is 8192 tokens" 400으로 답변조차 못 받았다.
     # 글자 예산 안에서 자르고, 잘랐다는 사실을 모델에게 알린다.
+    # 알파벳 순으로 자르면 뒤쪽 레포가 통째로 사라진다. 실측에서 vanilla-rnn과
+    # yopar-attribute가 잘려 나가 세 문항이 "데이터가 없다"로 무너졌다.
+    # 원 쿼리에 나온 낱말과 겹치는 행을 앞으로 올린 뒤 자른다.
+    import re as _re
+    terms = {t.lower() for t in _re.findall(r"[A-Za-z가-힣0-9][\w.\-]*", sql)
+             if len(t) > 2 and t.lower() not in
+             {"select", "from", "where", "and", "the", "order", "desc", "asc",
+              "limit", "like", "metrics", "repos", "name", "value", "condition"}}
+    all_rows.sort(key=lambda r: -sum(t in str(r).lower() for t in terms))
+
     kept, budget = [], FALLBACK_CHAR_BUDGET
     for row in all_rows:
         cost = len(str(row))

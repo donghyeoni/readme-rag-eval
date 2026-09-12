@@ -73,6 +73,20 @@ class Trace:
         return repos
 
 
+def _shrink(messages: list[dict], keep: int = 700) -> bool:
+    """가장 오래된 도구 결과부터 줄인다. 줄일 게 있었으면 True."""
+    for m in messages:
+        if m["role"] != "tool":
+            continue
+        for r in m["results"]:
+            if len(r["content"]) > keep:
+                n = len(r["content"])
+                note = "...(분량 때문에 잘림. 원래 " + str(n) + "자)"
+                r["content"] = r["content"][:keep] + chr(10) + note
+                return True
+    return False
+
+
 def ask(question: str, backend: Backend, toolset: str = "C",
         max_turns: int = 6, expand_query: bool = True,
         system: str = SYSTEM, verify: bool = True) -> tuple[str, Trace]:
@@ -82,7 +96,14 @@ def ask(question: str, backend: Backend, toolset: str = "C",
     rechecked = False      # 되묻기는 한 번만 (무한 왕복 방지)
 
     for _ in range(max_turns):
-        reply: Reply = backend.send(system, messages, tools)
+        try:
+            reply: Reply = backend.send(system, messages, tools)
+        except RuntimeError as e:
+            # 컨텍스트를 넘겨도 문항을 죽이지 않는다. 오래된 도구 결과를 줄여
+            # 한 번 더 시도한다 — 실측에서 두 문항이 400으로 답변조차 못 받았다.
+            if "context length" not in str(e) or not _shrink(messages):
+                raise
+            reply = backend.send(system, messages, tools)
         tr.turns += 1
         tr.input_tokens += reply.input_tokens
         tr.output_tokens += reply.output_tokens
