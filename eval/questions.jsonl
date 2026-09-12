@@ -1,0 +1,20 @@
+{"id": "d1", "q": "초해상도 프로젝트의 2단 재구성에서 MRIMCNN이 무작위 선택 대비 PSNR이 얼마나 개선됐나?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["31.57", "28.15"], "route": "db"}
+{"id": "d2", "q": "PSNR이 30dB를 넘은 프로젝트를 모두 알려줘", "gold_repo": null, "must_include": ["rasr-region-adaptive-sr", "gaps-uav-restoration"], "route": "db"}
+{"id": "d3", "q": "시작일부터 마지막 갱신일까지 기간이 가장 긴 프로젝트는 무엇인가?", "gold_repo": null, "must_include": ["Algorithm-training"], "route": "db"}
+{"id": "d4", "q": "주 언어가 Python이 아닌 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["digital-modulation-ber", "vanilla-rnn-fpga-quantization", "Algorithm-training"], "route": "db"}
+{"id": "d5", "q": "accuracy를 지표로 기록한 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["robust-image-classification", "tre-deepfake-detection", "vanilla-rnn-fpga-quantization", "yopar-attribute-recognition"], "route": "db"}
+{"id": "d6", "q": "RNN 양자화에서 Q1.15와 Q4.12의 정수 데이터패스 정확도는 각각 얼마인가?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["0.6272", "0.675"], "route": "db"}
+{"id": "d7", "q": "MSE가 정확히 0으로 측정된 조건이 있는 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["depth16-rgb-mapping", "jpeg-dct-compression"], "route": "db"}
+{"id": "d8", "q": "인상착의 속성 인식에서 실제로 채택한 버전의 평균 정확도는?", "gold_repo": "yopar-attribute-recognition", "must_include": ["0.885"], "route": "db"}
+{"id": "d9", "q": "AWGN에서 BER 1e-3에 도달하는 데 Eb/No가 가장 많이 필요한 변조 방식과 그 값은?", "gold_repo": "digital-modulation-ber", "must_include": ["256", "19.3"], "route": "db"}
+{"id": "d10", "q": "잡음 제거 실험에서 PSNR이 가장 높게 나온 조건은 무엇인가?", "gold_repo": "gaps-uav-restoration", "must_include": ["43.92"], "route": "db"}
+{"id": "s1", "q": "잡음 종류에 따라 어떤 필터가 좋았고 왜 그랬나?", "gold_repo": "gaps-uav-restoration", "must_include": ["median", "bilateral"], "route": "docs"}
+{"id": "s2", "q": "딥페이크 탐지의 조건 C는 어떤 생성기에서 통하고 어떤 생성기에서 무너지나?", "gold_repo": "tre-deepfake-detection", "must_include": ["wukong", "biggan"], "route": "docs"}
+{"id": "s3", "q": "초해상도 프로젝트에서 UAV가 한 번에 찍는 픽셀 크기와 서버가 최종적으로 만드는 해상도는?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["128", "512"], "route": "docs"}
+{"id": "s4", "q": "Q1.15에서 정확도가 떨어진 원인 두 가지는 무엇인가?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["클리핑", "포화"], "route": "docs"}
+{"id": "s5", "q": "FPGA에서 tanh를 어떻게 처리했고 최종 표는 몇 엔트리인가?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["66"], "route": "docs"}
+{"id": "s6", "q": "16비트 심도를 RGB로 담는 세 가지 매핑은 각각 무엇이고, 잡음이 있는 채널에서 가장 강한 것은?", "gold_repo": "depth16-rgb-mapping", "must_include": ["6/6/4"], "route": "docs"}
+{"id": "s7", "q": "salt-and-pepper 비율이 0.5일 때 모든 복구 방법이 비슷해지는 이유는?", "gold_repo": "robust-image-classification", "must_include": ["0.24"], "route": "docs"}
+{"id": "s8", "q": "AGV 격자 위치 추정에서 작업대를 찾는 방법과 그 한계는?", "gold_repo": "agv-grid-localization", "must_include": ["170"], "route": "docs"}
+{"id": "s9", "q": "엣지 서비스에서 TensorRT 엔진 캐시를 git에 커밋하지 않는 이유는?", "gold_repo": "yopar-edge-service", "must_include": ["TensorRT"], "route": "docs"}
+{"id": "s10", "q": "JPEG 프로젝트의 서브밴드 최적 QP 탐색은 무엇을 최소화하나?", "gold_repo": "jpeg-dct-compression", "must_include": ["MSE", "rate"], "route": "docs"}
