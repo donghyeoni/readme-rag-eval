@@ -116,6 +116,7 @@ def eval_agent(qs: list[dict], backend_spec: str, toolset: str,
             "retrieved": "|".join(tr.retrieved_repos(top=3)),
             "recall3": (int(q["gold_repo"] in tr.retrieved_repos(top=3))
                         if (q["gold_repo"] and "search_docs" in available) else ""),
+            "recovered": tr.recovered_calls, "verifier": tr.verifier_hits,
             "in_tok": tr.input_tokens, "out_tok": tr.output_tokens,
             "latency_s": round(tr.latency_s, 2),
             "stop_reason": tr.stop_reason,
@@ -142,6 +143,8 @@ def eval_agent(qs: list[dict], backend_spec: str, toolset: str,
         "avg_calls": sum(r["n_calls"] for r in rows) / n,
         "err_rate": (sum(r["n_errors"] for r in rows) / max(sum(r["n_calls"] for r in rows), 1)),
         "avg_latency": sum(r["latency_s"] for r in rows) / n,
+        "recovered": sum(r["recovered"] for r in rows),
+        "verifier": sum(r["verifier"] for r in rows),
         "in_tok": sum(r["in_tok"] for r in rows),
         "out_tok": sum(r["out_tok"] for r in rows),
         "failures": fails,
@@ -207,7 +210,8 @@ def main() -> int:
         summaries.append(res)
         print(f"  정답률 {res['accuracy']:.3f} / 도구선택 {fmt(res['tool_acc'])} "
               f"/ Recall@3 {fmt(res['recall3'])} / 평균호출 {res['avg_calls']:.1f} "
-              f"/ 에러율 {res['err_rate']:.3f}")
+              f"/ 에러율 {res['err_rate']:.3f} / 복구 {res['recovered']} "
+              f"/ 검증기 {res['verifier']}")
 
     md = ["# 평가 결과", "",
           f"백엔드: `{summaries[0]['backend']}` · 문항 {summaries[0]['n']}개 · "
