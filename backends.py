@@ -47,13 +47,13 @@ def recover_tool_calls(text: str, known: set[str]) -> list[dict]:
     """본문에 섞여 나온 도구 호출을 건져낸다.
 
     작은 모델은 `<tool_call>` 태그를 온전히 못 내서 서버 파서가 호출을 놓치고,
-    호출 JSON이 그대로 본문에 실려 온다(실측: `leton {"name": ...} </tool_call>`).
+    호출 JSON이 그대로 본문에 실려 온다(예: `leton {"name": ...} </tool_call>`).
     호출 의도는 분명한데 형식만 깨진 경우라 버리지 않고 복구한다.
 
     `known`에 있는 도구 이름만 받아들여, 모델이 지어낸 이름은 걸러낸다.
 
     처음엔 `tool_call` 태그 잔해가 있을 때만 복구했는데, 태그 없이 다른 쓰레기가
-    붙는 변종(실측: `iNdEx {"name": "query_db", ...}`)을 놓쳤다. 태그 대신
+    붙는 변종(예: `iNdEx {"name": "query_db", ...}`)을 놓쳤다. 태그 대신
     **코드펜스 밖일 것**만 요구한다. 오탐 걱정이 줄어드는 이유는 호출자가
     파싱된 호출이 하나도 없을 때만 이 함수를 부르기 때문이다 — 모델이 한 번도
     조회하지 않고 근거를 인용할 일은 없다.
@@ -264,8 +264,7 @@ class OpenAIToolBackend(Backend):
             calls.append({"id": tc.get("id") or f"call_{len(calls)}",
                           "name": tc["function"]["name"], "input": args})
 
-        # 서버 파서가 놓친 호출을 본문에서 건져낸다. 실제로 20문항 중 2건이
-        # 이렇게 새어 나와 "도구 미사용"으로 잡혔다.
+        # 서버 파서가 놓친 호출을 본문에서 건져낸다.
         recovered = 0
         if not calls and msg.get("content"):
             calls = recover_tool_calls(msg["content"], {t["name"] for t in tools})

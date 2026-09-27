@@ -19,9 +19,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 # 이미 측정·공개에 쓴 라벨은 결과를 보고 바꾸지 않는다. 바꾸면 앞선 수치와
 # 비교가 끊기고, "결과를 보고 채점 기준을 고쳤다"가 되기 때문이다.
-ACCEPTED = {
-    "s5": "공개된 20문항 측정에 쓰인 라벨이라 사후 수정하지 않음",
-}
+ACCEPTED: dict[str, str] = {}
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
@@ -31,7 +29,7 @@ DB = ROOT / "meta.db"
 def db_haystack() -> str:
     con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     parts = []
-    for table in ("repos", "metrics"):
+    for table in ("repos", "cells"):
         for row in con.execute(f"SELECT * FROM {table}"):
             parts.append(" ".join("" if v is None else str(v) for v in row))
     con.close()

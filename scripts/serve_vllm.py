@@ -24,9 +24,9 @@ TOKEN = os.environ.get("JUP_TOKEN", "")
 BASE = f"http://{HOST}/user/{USER}"
 
 MODEL = os.environ.get("VLLM_MODEL", "Qwen/Qwen2.5-7B-Instruct")
-# 드라이버가 상한을 정한다. 570(CUDA 12.8)에서는 torch 2.13(cu130)을 끌어오는
+# 드라이버가 상한을 정한다. 570(CUDA 12.8)에서는 CUDA 13 계열 torch를 끌어오는
 # vLLM 0.20+ 가 엔진 초기화에서 죽는다. torch 2.10(cu128)에 고정된 마지막 계열이
-# 0.17~0.19라 0.19.1을 쓴다. 자세한 판별 근거는 README의 "버전 고르기".
+# 0.17~0.19라 0.19.1을 쓴다. 판별 근거는 log/service-log.md의 "vLLM 버전".
 VERSION = os.environ.get("VLLM_VERSION", "0.19.1")
 PORT = int(os.environ.get("VLLM_PORT", "8000"))
 LOG = "~/vllm_readme_rag.log"

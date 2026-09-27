@@ -20,10 +20,8 @@ _BASE = (
 )
 _NUM = " 수치는 도구가 돌려준 값을 그대로 옮기고 반올림하거나 바꾸지 마라."
 
-# v0가 처음 쓴 문구다. "확인되지 않으면 모른다고 답하라"가 7B 모델에서는
-# **도구를 부르기 전에** 모른다고 답해도 된다는 허가로 읽혀, 도구 호출이
-# 통째로 사라졌다. 측정으로 잡아낸 것이라 비교용으로 남겨 둔다
-# (README의 "프롬프트 한 문장이 도구 호출을 없앤다" 참고).
+# v0의 "확인되지 않으면 모른다고 답하라"는 도구를 부르기 전에 모른다고 답해도
+# 된다는 뜻으로 읽힐 수 있어, v2는 도구 없이 모른다고 답하는 것을 막는다.
 SYSTEM_VARIANTS = {
     "v0": _BASE + " 도구로 확인되지 않으면 모른다고 답하라." + _NUM,
     "v2": _BASE + " 도구를 한 번도 부르지 않은 채로 모른다고 답해서는 안 된다." + _NUM,
@@ -100,7 +98,7 @@ def ask(question: str, backend: Backend, toolset: str = "C",
             reply: Reply = backend.send(system, messages, tools)
         except RuntimeError as e:
             # 컨텍스트를 넘겨도 문항을 죽이지 않는다. 오래된 도구 결과를 줄여
-            # 한 번 더 시도한다 — 실측에서 두 문항이 400으로 답변조차 못 받았다.
+            # 한 번 더 시도한다.
             if "context length" not in str(e) or not _shrink(messages):
                 raise
             reply = backend.send(system, messages, tools)

@@ -1,6 +1,7 @@
 # readme-rag-eval
 
-내 프로젝트 README 12건을 검색하고 SQLite 메타DB에 질의해 답하는 도구 연동형 LLM 서비스다.
+GitHub 계정의 공개 레포 README를 검색하고 SQLite DB에 질의해 답하는 도구 연동형 LLM 서비스다. 기본 대상은
+`donghyeoni` 계정의 공개 레포 14개(포크와 이 레포 제외)다.
 측정 결과, 설계 판단, 서버 설정은 [`log/service-log.md`](log/service-log.md)(이하 로그)에 있다.
 
 ## 동작
@@ -8,7 +9,7 @@
 ```
 질문
  +-> [LLM 루프] --- tool_use ---> search_docs(query, k) --> docs/*.md 청크 BM25 상위 k개
-       ^                     +--> query_db(sql)          --> SQLite (repos, metrics)
+       ^                     +--> query_db(sql)          --> SQLite (repos, cells)
        |                                                        |
        +----------------- tool_result <-------------------------+
 
@@ -19,8 +20,10 @@
    - `search_docs(query, k)`: `docs/*.md`를 마크다운 헤딩 단위로 자른 청크에서 BM25로 상위 k개를 찾는다.
      한국어 질문은 한→영 별칭표로 확장해 영어 README도 찾고, 모델의 검색어와 질문 원문으로 따로 찾은 결과를
      번갈아 섞는다. 표가 든 청크는 행 단위로 편 것을 함께 준다.
-   - `query_db(sql)`: `repos`, `metrics` 두 테이블에 읽기 전용 SELECT를 실행한다.
-2. 도구 결과를 받아 필요하면 다시 부른다. `query_db` 결과가 비면 조건을 뺀 행을 관련도 순으로 함께 돌려준다.
+   - `query_db(sql)`: 읽기 전용 SELECT를 실행한다. `repos`는 레포 메타데이터와 README의 기간, `cells`는 모든 README
+     표의 칸이다.
+2. 도구 결과를 받아 필요하면 다시 부른다. `query_db` 결과가 비면 조건을 뺀 표 칸을 쿼리 낱말과
+   겹치는 순으로 함께 돌려준다.
 3. 답을 내기 전에 답의 수치가 도구 출력에 있는지 대조하고, 없으면 한 번 되묻는다(`verifier.py`).
 4. 모델은 Anthropic API와 OpenAI 호환 서버(vLLM) 중 하나로 부른다(`--backend`).
 
@@ -28,8 +31,8 @@
 
 ```bash
 pip install -r requirements.txt
-python scripts/fetch_docs.py   # 검색 대상 README 12건 수집 (gh CLI 필요)
-python build_db.py
+python scripts/fetch_docs.py --user donghyeoni   # 공개 레포 목록과 README 수집 (gh CLI 필요)
+python build_db.py                               # repos, cells 테이블 생성
 ```
 
 검색기만 확인 (LLM 불필요):

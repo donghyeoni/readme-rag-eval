@@ -1,4 +1,4 @@
-"""20문항 평가.
+"""평가.
 
 두 가지를 따로 잰다.
 
@@ -70,6 +70,8 @@ def eval_retrieval(qs: list[dict], k: int = 3, expand: bool = True) -> dict:
 # --------------------------------------------------------------------------
 def classify_failure(q: dict, tr: Trace, toolset: str) -> str:
     """틀린 질문의 원인을 하나로 정한다. 순서가 곧 우선순위다."""
+    if tr.stop_reason == "harness_error":
+        return "하네스 에러"
     if tr.stop_reason == "max_turns":
         return "루프 미종료"
     expected = EXPECTED_TOOL[q["route"]]

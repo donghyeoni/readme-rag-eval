@@ -3,8 +3,7 @@
 정답률 차이만 보면 표본 크기에 속는다. 같은 50문항을 두 조건으로 돌렸으므로
 짝지은 검정(McNemar)이 맞고, 그래야 "정말 좋아졌나"에 답할 수 있다.
 
-    python eval/compare.py results/agent_C_prefix.csv results/agent_C_fixed.csv
-    python eval/compare.py results/agent_C_fixed.csv results/agent_C_14b.csv --labels 7B 14B
+    python eval/compare.py results/agent_A_14b.csv results/agent_C_14b.csv --labels A C
 """
 from __future__ import annotations
 
@@ -16,10 +15,6 @@ from math import comb, sqrt
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
-# 6가지 수정을 도출한 원래 20문항. 나머지 30문항은 그 수정을 겨냥하지 않았으므로
-# 사실상 홀드아웃이다.
-TARGETED = {f"{p}{i}" for p in ("d", "s") for i in range(1, 11)}
 
 
 def load(path: str) -> dict[str, dict]:
@@ -56,8 +51,8 @@ def main() -> int:
 
     print(f"=== {la} → {lb} · 공통 {len(ids)}문항 ===\n")
     print(f"{'분할':<22}{la:>10}{lb:>10}{'차이':>9}   틀→맞 맞→틀      p")
-    splits = [("수정이 겨냥한 20문항", lambda i: i in TARGETED),
-              ("홀드아웃 30문항", lambda i: i not in TARGETED),
+    splits = [("DB 문항", lambda i: i.startswith("d")),
+              ("문서 문항", lambda i: i.startswith("s")),
               ("전체", lambda i: True)]
     for label, sel in splits:
         sub = [i for i in ids if sel(i)]
@@ -76,8 +71,7 @@ def main() -> int:
     for i in ids:
         if A[i]["correct"] != B[i]["correct"]:
             d = "틀→맞" if B[i]["correct"] == "1" else "맞→틀"
-            tag = "겨냥" if i in TARGETED else "홀드아웃"
-            print(f"  {i:<5} {d}  [{tag}]  {B[i]['failure'] or '정답'}")
+            print(f"  {i:<5} {d}  {B[i]['failure'] or '정답'}")
 
     print(f"\n{lb} 실패 유형:")
     for k, v in Counter(B[i]["failure"] for i in ids if B[i]["failure"]).most_common():

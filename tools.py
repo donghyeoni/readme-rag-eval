@@ -12,7 +12,7 @@ import sqlite3
 
 from retriever import Retriever, flatten_tables
 
-DB = "meta.db"
+DB = str(__import__("pathlib").Path(__file__).resolve().parent / "meta.db")
 
 # 폴백이 붙일 수 있는 최대 글자 수. 8192 토큰 창에서 검색 결과·대화와
 # 함께 들어가야 하므로 여유를 둔다.
@@ -54,22 +54,18 @@ SEARCH_DOCS = {
 QUERY_DB = {
     "name": "query_db",
     "description": (
-        "프로젝트 메타데이터에 SELECT 쿼리를 실행한다. 스키마: "
-        "repos(name, language, domain, started, ended, duration_days, summary), "
-        "metrics(repo, name, condition, baseline, value, unit). "
-        "metrics.name에 있는 값은 이게 전부다: PSNR, accuracy, MSE, EbNo, "
-        "coding_gain, pilot_penalty, match_rate, clip_rate, saturation_rate. "
-        "**여기 없는 수치(파라미터 수, 데이터셋 장수, BER, 표 엔트리 수 등)는 "
-        "DB에 없고 문서에만 있으므로 search_docs를 써야 한다.** "
-        "metrics.condition은 측정 조건을 적은 한국어 자유 서술이다. "
-        "**값, 목록, 순위**를 묻는 질문에 쓴다. 수치뿐 아니라 "
-        "**언어, 도메인, 기간 같은 비수치 속성으로 거르는 질문도 포함**한다. "
-        "예: 'PSNR이 30dB 넘는 프로젝트 전부', 'Python이 아닌 프로젝트', "
-        "'가장 오래 걸린 프로젝트'. "
-        "기준값 대비 개선폭을 물으면 value와 함께 **baseline 컬럼도 SELECT**할 것. "
-        "기간 비교에는 started/ended를 빼지 말고 duration_days를 쓸 것 "
+        "프로젝트 메타데이터와 README 표에 SELECT 쿼리를 실행한다. 스키마: "
+        "repos(name, language, description, topics, created, pushed, started, ended, duration_days), "
+        "cells(repo, section, table_no, row_no, row_label, col, value, number). "
+        "cells는 각 레포 README에 있는 모든 마크다운 표의 칸이다. section은 표 위의 제목, "
+        "row_label은 그 행의 첫 칸, col은 열 이름, value는 칸의 원문, number는 value에서 읽은 첫 숫자다. "
+        "지표 이름은 표마다 달라서 col, row_label, section을 LIKE로 찾아야 한다 "
+        "(예: col LIKE '%PSNR%' OR section LIKE '%PSNR%'). "
+        "**값, 목록, 순위**를 묻는 질문과 언어, 기간 같은 속성으로 거르는 질문에 쓴다. "
+        "예: 'PSNR이 30dB 넘는 프로젝트 전부', 'Python이 아닌 프로젝트', '가장 오래 걸린 프로젝트'. "
+        "started/ended는 README에 기간이 적힌 레포에만 있다. 기간 비교에는 duration_days를 쓸 것 "
         "(날짜는 TEXT라 빼기가 조용히 틀린 값을 준다). "
-        "SELECT만 허용된다."
+        "표에 없는 설명이나 이유는 search_docs를 쓸 것. SELECT만 허용된다."
     ),
     "input_schema": {
         "type": "object",
@@ -96,15 +92,14 @@ def search_docs(query: str, k: int = 5, expand_query: bool = True,
                 flatten: bool = True, question: str | None = None) -> str:
     """모델이 정한 검색어로 찾는다.
 
-    `question`(원 질문)이 있으면 검색어에 합쳐서 던진다. 모델이 줄여 쓴 검색어가
-    원문보다 못 찾는 경우가 실제로 있었다 — 검색 실패 4건 중 3건이 질문 원문으로는
-    상위 3개 안에 들어왔다. 검색기는 결정적이므로 이건 모델이 아니라 질의어 문제다.
+    `question`(원 질문)이 있으면 원문으로도 따로 찾아 두 결과를 번갈아 섞는다. 모델이 줄여 쓴
+    검색어가 원문보다 못 찾는 경우가 있어서다.
     """
     k = k or 5
     r = retriever(expand_query)
     hits = r.search(query, k=k)
     if question and question.strip() != query.strip():
-        # 두 검색어를 이어 붙이면 서로를 밀어낸다(실측: s11이 오히려 떨어졌다).
+        # 두 검색어를 이어 붙이면 서로를 밀어낸다.
         # 따로 돌려 번갈아 섞으면 각 검색어의 1위가 반드시 살아남는다.
         merged, seen = [], set()
         for a, b in zip(hits, r.search(question, k=k)):
@@ -131,46 +126,29 @@ _FORBIDDEN = re.compile(
 
 
 def _inventory(con: sqlite3.Connection) -> dict:
-    """DB에 실제로 무엇이 있는지. 없는 것을 묻고 있음을 모델이 알아채게 한다."""
     return {
-        "metrics.name에 실제로 있는 값": [
-            r[0] for r in con.execute("SELECT DISTINCT name FROM metrics ORDER BY name")],
         "repos.name": [r[0] for r in con.execute("SELECT name FROM repos ORDER BY name")],
     }
 
 
-def _fallback(con: sqlite3.Connection, sql: str, cols: list[str]) -> dict:
-    """조건을 벗긴 결과를 대신 돌려준다.
+_STOP = {"select", "from", "where", "and", "the", "order", "desc", "asc", "limit", "like",
+         "cells", "repos", "repo", "section", "row_label", "col", "value", "number", "name"}
 
-    metrics는 63행뿐이라 통째로 줘도 부담이 없다. 모델이 WHERE를 잘못 써서
-    헛돈 경우가 대부분이고, 자료는 늘 손 닿는 곳에 있었다(실측: db 오답 9건
-    전부 레포 전체를 긁으면 답이 그 안에 있었다).
-    """
+
+def _fallback(con: sqlite3.Connection, sql: str, cols: list[str]) -> dict:
     known = [r[0] for r in con.execute("SELECT name FROM repos")]
     hit = [r for r in known if r.lower() in sql.lower()]
+    base = "SELECT repo, section, row_label, col, value FROM cells"
     if hit:
         marks = ",".join("?" * len(hit))
-        cur = con.execute(
-            f"SELECT repo, name, condition, baseline, value, unit "
-            f"FROM metrics WHERE repo IN ({marks}) ORDER BY repo, name", hit)
-        scope = f"{', '.join(hit)} 의 모든 metrics 행"
+        cur = con.execute(f"{base} WHERE repo IN ({marks}) ORDER BY repo, table_no, row_no", hit)
+        scope = f"{', '.join(hit)} 의 모든 표 칸"
     else:
-        cur = con.execute(
-            "SELECT repo, name, condition, baseline, value, unit "
-            "FROM metrics ORDER BY repo, name")
-        scope = "metrics 전체"
+        cur = con.execute(f"{base} ORDER BY repo, table_no, row_no")
+        scope = "모든 레포의 표 칸"
     all_rows = cur.fetchall()
-    # 전부 붙이면 검색 결과와 겹쳐 컨텍스트를 넘긴다. 실측에서 두 문항이
-    # "maximum context length is 8192 tokens" 400으로 답변조차 못 받았다.
-    # 글자 예산 안에서 자르고, 잘랐다는 사실을 모델에게 알린다.
-    # 알파벳 순으로 자르면 뒤쪽 레포가 통째로 사라진다. 실측에서 vanilla-rnn과
-    # yopar-attribute가 잘려 나가 세 문항이 "데이터가 없다"로 무너졌다.
-    # 원 쿼리에 나온 낱말과 겹치는 행을 앞으로 올린 뒤 자른다.
-    import re as _re
-    terms = {t.lower() for t in _re.findall(r"[A-Za-z가-힣0-9][\w.\-]*", sql)
-             if len(t) > 2 and t.lower() not in
-             {"select", "from", "where", "and", "the", "order", "desc", "asc",
-              "limit", "like", "metrics", "repos", "name", "value", "condition"}}
+    terms = {t.lower() for t in re.findall(r"[A-Za-z가-힣0-9][\w.\-]*", sql)
+             if len(t) > 2 and t.lower() not in _STOP}
     all_rows.sort(key=lambda r: -sum(t in str(r).lower() for t in terms))
 
     kept, budget = [], FALLBACK_CHAR_BUDGET
@@ -180,12 +158,12 @@ def _fallback(con: sqlite3.Connection, sql: str, cols: list[str]) -> dict:
             break
         budget -= cost
         kept.append(row)
-    note = (f"요청한 조건으로는 0행이라, 조건을 벗기고 {scope}을 대신 붙였습니다. "
-            f"아래 fallback_rows에서 직접 고르세요. 여기에도 없으면 그 수치는 "
-            f"DB가 아니라 문서에 있는 것이므로 search_docs를 쓰세요.")
+    note = (f"요청한 조건으로는 0행이라, 조건을 벗기고 {scope}을 쿼리 낱말과 겹치는 순서로 붙였습니다. "
+            f"아래 fallback_rows에서 직접 고르세요. 여기에도 없으면 표가 아니라 본문에 있는 것이므로 "
+            f"search_docs를 쓰세요.")
     if len(kept) < len(all_rows):
         note += (f" (분량 때문에 {len(all_rows)}행 중 {len(kept)}행만 실었습니다. "
-                 f"원하는 것이 없으면 repo나 name으로 좁혀 다시 조회하세요.)")
+                 f"원하는 것이 없으면 repo나 col로 좁혀 다시 조회하세요.)")
     return {
         "columns": cols, "rows": [],
         "note": note,
@@ -201,7 +179,7 @@ def query_db(sql: str) -> str:
     1. SELECT로 시작하지 않거나 쓰기 키워드가 보이면 거절 (화이트리스트)
     2. 그래도 뚫렸을 때를 대비해 연결 자체를 읽기 전용으로 연다 (mode=ro)
 
-    2번이 실제 방어선이다. 1번만으로는 주석이나 CTE로 우회할 여지가 남는다.
+    2번이 실제 방어선이다. 1번을 통과해도 의도와 다른 SELECT(예: UNION)는 가능하다.
     """
     stripped = sql.strip().rstrip(";")
     if not stripped.lower().startswith("select") or _FORBIDDEN.search(stripped):
@@ -214,9 +192,7 @@ def query_db(sql: str) -> str:
         cols = [d[0] for d in cur.description]
         rows = cur.fetchall()[:50]
         if not rows:
-            # 빈 결과에 "다시 조회하라"고 적어 보냈더니 14B조차 그 문장을 읽고
-            # "결과가 없습니다"로 끝냈다(실측). 지시로는 안 된다는 뜻이라,
-            # 이번엔 하네스가 직접 조건을 벗겨 다시 조회하고 그 자료를 붙인다.
+            # 다시 조회하라는 지시 대신, 하네스가 직접 조건을 벗겨 다시 조회하고 그 자료를 붙인다.
             return json.dumps(_fallback(con, stripped, cols), ensure_ascii=False)
         return json.dumps({"columns": cols, "rows": rows}, ensure_ascii=False)
     except Exception as e:
@@ -236,10 +212,10 @@ if __name__ == "__main__":
     print(search_docs("잡음 종류별로 어떤 필터를 골랐나", k=2))
     print("--- query_db (정상) ---")
     print(query_db(
-        "SELECT repo, condition, value FROM metrics "
-        "WHERE name='PSNR' AND value > 30 ORDER BY value DESC"
+        "SELECT repo, section, row_label, col, value FROM cells "
+        "WHERE col LIKE '%PSNR%' AND number > 30 ORDER BY number DESC"
     ))
     print("--- query_db (쓰기 시도) ---")
     print(query_db("DROP TABLE repos"))
     print(query_db("SELECT 1; DELETE FROM repos"))
-    print(query_db("select * from repos where name='x' union select 1,2,3,4,5,6 -- "))
+    print(query_db("select * from repos where name='x' union select 1,2,3,4,5,6,7,8,9 -- "))

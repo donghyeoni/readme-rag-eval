@@ -1,63 +1,56 @@
-"""검색 대상 README 12건을 GitHub에서 내려받아 docs/<repo>.md로 저장한다.
-
-README 원본은 각 레포에 이미 공개돼 있으므로 이 저장소에는 사본을 두지 않는다
-(.gitignore의 docs/*.md). 대신 이 스크립트로 언제든 같은 상태를 만든다.
-
-    gh auth login          # 한 번만
-    python scripts/fetch_docs.py
-
-gh가 없으면 각 레포의 README.md를 직접 docs/<repo>.md로 저장해도 된다.
-"""
-from __future__ import annotations
-
+import argparse
+import json
 import pathlib
 import subprocess
 import sys
 
-USER = "donghyeoni"
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+DOCS = ROOT / "docs"
+META = ROOT / "data" / "repos.json"
+SELF = "readme-rag-eval"
 
-# 평가에 쓴 12건. 목록을 고정해 두는 이유는 레포가 늘어도 측정 대상이
-# 바뀌지 않게 하기 위해서다(수치를 비교할 수 있어야 한다).
-REPOS = [
-    "Algorithm-training",
-    "vanilla-rnn-fpga-quantization",
-    "yopar-attribute-recognition",
-    "agv-grid-localization",
-    "tre-deepfake-detection",
-    "depth16-rgb-mapping",
-    "digital-modulation-ber",
-    "robust-image-classification",
-    "jpeg-dct-compression",
-    "yopar-edge-service",
-    "gaps-uav-restoration",
-    "rasr-region-adaptive-sr",
-]
 
-DOCS = pathlib.Path(__file__).resolve().parent.parent / "docs"
+def gh(path):
+    out = subprocess.run(["gh", "api", "--paginate", "--slurp", path], capture_output=True)
+    if out.returncode != 0:
+        raise RuntimeError(out.stderr.decode(errors="replace")[:200])
+    return [item for page in json.loads(out.stdout) for item in page]
+
+
+def public_repos(user):
+    repos = gh(f"users/{user}/repos?type=owner&per_page=100")
+    return sorted((r for r in repos
+                   if not r["private"] and not r["fork"] and r["name"] != SELF),
+                  key=lambda r: r["name"].lower())
 
 
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    DOCS.mkdir(exist_ok=True)
-    failed = []
-    for repo in REPOS:
-        out = subprocess.run(
-            ["gh", "api", f"repos/{USER}/{repo}/readme",
-             "-H", "Accept: application/vnd.github.raw"],
-            capture_output=True,
-        )
-        if out.returncode != 0:
-            failed.append(repo)
-            print(f"{repo:<32} FAILED: {out.stderr.decode(errors='replace')[:80]}")
-            continue
-        path = DOCS / f"{repo}.md"
-        path.write_bytes(out.stdout)
-        print(f"{repo:<32} {len(out.stdout):>7,} bytes")
+    parser = argparse.ArgumentParser(description="Fetch the READMEs of all public repositories of a GitHub user.")
+    parser.add_argument("--user", default="donghyeoni")
+    args = parser.parse_args()
 
-    print(f"\n{len(REPOS) - len(failed)}/{len(REPOS)}개 저장 -> {DOCS}")
-    if failed:
-        print(f"실패: {', '.join(failed)}")
-        return 1
+    DOCS.mkdir(exist_ok=True)
+    META.parent.mkdir(exist_ok=True)
+    for old in DOCS.glob("*.md"):
+        old.unlink()
+
+    meta = []
+    for r in public_repos(args.user):
+        out = subprocess.run(
+            ["gh", "api", f"repos/{args.user}/{r['name']}/readme",
+             "-H", "Accept: application/vnd.github.raw"], capture_output=True)
+        has_readme = out.returncode == 0
+        if has_readme:
+            (DOCS / f"{r['name']}.md").write_bytes(out.stdout)
+        meta.append(dict(name=r["name"], language=r["language"], description=r["description"],
+                         topics=r.get("topics", []), created=r["created_at"][:10],
+                         pushed=r["pushed_at"][:10], stars=r["stargazers_count"],
+                         readme=has_readme))
+        print(f"{r['name']:<32} {len(out.stdout) if has_readme else 0:>7,} bytes")
+
+    META.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"\n{len(meta)} repos, {sum(m['readme'] for m in meta)} READMEs -> {DOCS}")
     return 0
 
 

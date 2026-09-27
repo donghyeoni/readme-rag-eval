@@ -3,7 +3,7 @@
 한국어/영어가 섞인 README를 대상으로 하므로 토큰화를 직접 정의한다.
 영문·숫자는 소문자 단어, 한글은 2-gram. 형태소 분석기를 쓰지 않은 이유는
 외부 의존성 없이 재현 가능하고, 짧은 기술 용어에서 재현율이 떨어지지
-않기 때문이다(README.md의 "설계 판단" 참고).
+않기 때문이다(log/service-log.md의 "설계 판단" 참고).
 """
 from __future__ import annotations
 
@@ -60,8 +60,7 @@ def tokenize(s: str) -> list[str]:
 def flatten_tables(text: str, max_rows: int = 40) -> list[str]:
     """마크다운 표를 행 하나에 자족적인 문장 하나로 편다.
 
-    큰 표를 그대로 넘기면 모델이 행과 열을 어긋나게 읽는다(실측: 임펄스 잡음의
-    최적 필터를 median 43.92 대신 Bilateral C=75라고 답했다). 색인은 건드리지
+    큰 표를 그대로 넘기면 모델이 행과 열을 어긋나게 읽을 수 있다. 색인은 건드리지
     않고 도구가 돌려주는 표현만 바꾼다 — 검색 결과 순위는 그대로 둔 채
     읽기 쉬움만 더하는 것이다.
 
@@ -82,7 +81,8 @@ def flatten_tables(text: str, max_rows: int = 40) -> list[str]:
             i += 1
         if len(block) < 3:                       # 헤더 + 구분선 + 데이터 1행 이상
             continue
-        cells = lambda ln: [c.strip() for c in ln.strip().strip("|").split("|")]
+        cells = lambda ln: [c.strip().replace("\\|", "|")
+                            for c in re.split(r"(?<!\\)\|", ln.strip().strip("|"))]
         header = cells(block[0])
         if not re.match(r"^[\s|:-]+$", block[1]):   # 두 번째 줄이 구분선이어야 표
             continue

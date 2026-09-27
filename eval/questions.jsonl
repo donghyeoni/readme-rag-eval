@@ -1,50 +1,50 @@
-{"id": "d1", "q": "초해상도 프로젝트의 2단 재구성에서 MRIMCNN이 무작위 선택 대비 PSNR이 얼마나 개선됐나?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["31.57", "28.15"], "route": "db"}
-{"id": "d2", "q": "PSNR이 30dB를 넘은 프로젝트를 모두 알려줘", "gold_repo": null, "must_include": ["rasr-region-adaptive-sr", "gaps-uav-restoration"], "route": "db"}
-{"id": "d3", "q": "시작일부터 마지막 갱신일까지 기간이 가장 긴 프로젝트는 무엇인가?", "gold_repo": null, "must_include": ["Algorithm-training"], "route": "db"}
-{"id": "d4", "q": "주 언어가 Python이 아닌 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["digital-modulation-ber", "vanilla-rnn-fpga-quantization", "Algorithm-training"], "route": "db"}
-{"id": "d5", "q": "accuracy를 지표로 기록한 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["robust-image-classification", "tre-deepfake-detection", "vanilla-rnn-fpga-quantization", "yopar-attribute-recognition"], "route": "db"}
-{"id": "d6", "q": "RNN 양자화에서 Q1.15와 Q4.12의 정수 데이터패스 정확도는 각각 얼마인가?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["0.6272", "0.675"], "route": "db"}
-{"id": "d7", "q": "MSE가 정확히 0으로 측정된 조건이 있는 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["depth16-rgb-mapping", "jpeg-dct-compression"], "route": "db"}
-{"id": "d8", "q": "인상착의 속성 인식에서 실제로 채택한 버전의 평균 정확도는?", "gold_repo": "yopar-attribute-recognition", "must_include": ["0.885"], "route": "db"}
-{"id": "d9", "q": "AWGN에서 BER 1e-3에 도달하는 데 Eb/No가 가장 많이 필요한 변조 방식과 그 값은?", "gold_repo": "digital-modulation-ber", "must_include": ["256", "19.3"], "route": "db"}
-{"id": "d10", "q": "잡음 제거 실험에서 PSNR이 가장 높게 나온 조건은 무엇이고 그때 PSNR 값은 얼마인가?", "gold_repo": "gaps-uav-restoration", "must_include": ["43.92"], "route": "db"}
-{"id": "s1", "q": "잡음 종류에 따라 어떤 필터가 좋았고 왜 그랬나?", "gold_repo": "gaps-uav-restoration", "must_include": ["median", "bilateral"], "route": "docs"}
-{"id": "s2", "q": "딥페이크 탐지의 조건 C는 어떤 생성기에서 통하고 어떤 생성기에서 무너지나?", "gold_repo": "tre-deepfake-detection", "must_include": ["wukong", "biggan"], "route": "docs"}
-{"id": "s3", "q": "초해상도 프로젝트에서 UAV가 한 번에 찍는 픽셀 크기와 서버가 최종적으로 만드는 해상도는?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["128", "512"], "route": "docs"}
-{"id": "s4", "q": "Q1.15에서 정확도가 떨어진 원인 두 가지는 무엇인가?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["클리핑", "포화"], "route": "docs"}
-{"id": "s5", "q": "FPGA에서 tanh를 어떻게 처리했고 최종 표는 몇 엔트리인가?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["66"], "route": "docs"}
-{"id": "s6", "q": "16비트 심도를 RGB로 담는 세 가지 매핑은 각각 무엇이고, 잡음이 있는 채널에서 가장 강한 것은?", "gold_repo": "depth16-rgb-mapping", "must_include": ["6/6/4"], "route": "docs"}
-{"id": "s7", "q": "salt-and-pepper 비율이 0.5일 때 모든 복구 방법이 비슷해지는 이유는?", "gold_repo": "robust-image-classification", "must_include": ["0.24"], "route": "docs"}
-{"id": "s8", "q": "AGV 격자 위치 추정에서 작업대를 찾는 방법과 그 한계는?", "gold_repo": "agv-grid-localization", "must_include": ["170"], "route": "docs"}
-{"id": "s9", "q": "엣지 서비스에서 TensorRT 엔진 캐시를 git에 커밋하지 않는 이유는?", "gold_repo": "yopar-edge-service", "must_include": ["TensorRT"], "route": "docs"}
-{"id": "s10", "q": "JPEG 프로젝트의 서브밴드 최적 QP 탐색은 무엇을 최소화하나?", "gold_repo": "jpeg-dct-compression", "must_include": ["MSE", "rate"], "route": "docs"}
-{"id": "d11", "q": "초해상도 업스케일러 네 가지 중 PSNR이 가장 높은 모델과 그 값은?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["UUDCNN", "31.1"], "route": "db"}
-{"id": "d12", "q": "잡음 제거에서 기준 대비 개선폭이 가장 큰 조건의 PSNR 값은?", "gold_repo": "gaps-uav-restoration", "must_include": ["43.92", "18.2"], "route": "db"}
-{"id": "d13", "q": "영상 분류에서 표현 방식 중 정확도가 가장 낮았던 값은?", "gold_repo": "robust-image-classification", "must_include": ["0.582"], "route": "db"}
-{"id": "d14", "q": "딥페이크 탐지에서 조건 A와 조건 C의 8종 평균 정확도는 각각 얼마인가?", "gold_repo": "tre-deepfake-detection", "must_include": ["0.577", "0.605"], "route": "db"}
-{"id": "d15", "q": "심도 부호화에서 제안 매핑과 방법 2의 무손상 채널 MSE는 각각 얼마인가?", "gold_repo": "depth16-rgb-mapping", "must_include": ["509", "638"], "route": "db"}
-{"id": "d16", "q": "블록 DCT JPEG에서 QP=1과 QP=20의 MSE는 각각 얼마인가?", "gold_repo": "jpeg-dct-compression", "must_include": ["17.1", "255.5"], "route": "db"}
-{"id": "d17", "q": "연판정 비터비의 부호화 이득은 QPSK와 16-QAM에서 각각 몇 dB인가?", "gold_repo": "digital-modulation-ber", "must_include": ["3.9", "4"], "route": "db"}
-{"id": "d18", "q": "RNN 양자화에서 float 대비 예측 일치율이 1.0인 포맷은?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["Q4.12"], "route": "db"}
-{"id": "d19", "q": "속성 인식 v4와 v5의 평균 정확도는 각각 얼마인가?", "gold_repo": "yopar-attribute-recognition", "must_include": ["0.885", "0.835"], "route": "db"}
-{"id": "d20", "q": "C++로 작성한 프로젝트는 무엇인가?", "gold_repo": null, "must_include": ["Algorithm-training"], "route": "db"}
-{"id": "d21", "q": "가장 먼저 시작한 프로젝트는 무엇인가?", "gold_repo": null, "must_include": ["gaps-uav-restoration"], "route": "db"}
-{"id": "d22", "q": "MATLAB로 만든 프로젝트에 기록된 지표 이름을 전부 알려줘", "gold_repo": "digital-modulation-ber", "must_include": ["EbNo", "coding_gain", "pilot_penalty"], "route": "db"}
-{"id": "d23", "q": "PSNR을 기록한 프로젝트 중 baseline이 있는 행이 더 적은 쪽은?", "gold_repo": null, "must_include": ["rasr-region-adaptive-sr"], "route": "db"}
-{"id": "d24", "q": "accuracy가 0.8을 넘는 측정이 있는 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["robust-image-classification", "vanilla-rnn-fpga-quantization", "yopar-attribute-recognition"], "route": "db"}
-{"id": "d25", "q": "가장 늦게 시작한 프로젝트는 무엇인가?", "gold_repo": null, "must_include": ["tre-deepfake-detection"], "route": "db"}
-{"id": "s11", "q": "초해상도 업스케일러들의 파라미터 수는 어떻게 되나?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["56K", "376K"], "route": "docs"}
-{"id": "s12", "q": "대역폭 제한 재구성에서 선택과 채우기의 가장 좋은 조합은 무엇이었나?", "gold_repo": "gaps-uav-restoration", "must_include": ["gradient", "bicubic"], "route": "docs"}
-{"id": "s13", "q": "영상 분류에 쓴 데이터셋은 어떤 클래스로 이루어져 있나?", "gold_repo": "robust-image-classification", "must_include": ["Zebra", "Tiger"], "route": "docs"}
-{"id": "s14", "q": "딥페이크 탐지에서 3클래스 분류기로 바꾸자 biggan 정확도는 어떻게 변했나?", "gold_repo": "tre-deepfake-detection", "must_include": ["63.4"], "route": "docs"}
-{"id": "s15", "q": "딥페이크 탐지의 특징 추출은 이미지 한 장당 UNet을 몇 번 부르나?", "gold_repo": "tre-deepfake-detection", "must_include": ["250"], "route": "docs"}
-{"id": "s16", "q": "제안한 심도 매핑에서 정규화 값에 상한을 둔 이유와 그 값은?", "gold_repo": "depth16-rgb-mapping", "must_include": ["1534"], "route": "docs"}
-{"id": "s17", "q": "스펙트럼 휠 방식이 잡음에 무너질 때 픽셀이 어느 정도 비율로 망가지나?", "gold_repo": "depth16-rgb-mapping", "must_include": ["70%"], "route": "docs"}
-{"id": "s18", "q": "JPEG 프로젝트에서 엔트로피 부호화로 무엇을 썼나?", "gold_repo": "jpeg-dct-compression", "must_include": ["unary"], "route": "docs"}
-{"id": "s19", "q": "레일리 페이딩에서 인터리빙 없이 부호화하면 20dB에서 BER이 어떻게 되나?", "gold_repo": "digital-modulation-ber", "must_include": ["3.96e-3", "2.81e-3"], "route": "docs"}
-{"id": "s20", "q": "사용한 길쌈부호의 생성 다항식은 무엇인가?", "gold_repo": "digital-modulation-ber", "must_include": ["171", "133"], "route": "docs"}
-{"id": "s21", "q": "Q1.15 손실의 두 원인을 따로 껐을 때 정확도가 각각 어떻게 나왔나?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["0.5865", "0.6587"], "route": "docs"}
-{"id": "s22", "q": "혼합 포맷에서 Wx만 넓은 포맷이 필요한 이유는 무엇인가?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["5.3176"], "route": "docs"}
-{"id": "s23", "q": "속성 인식에서 v5를 채택하지 않은 이유는?", "gold_repo": "yopar-attribute-recognition", "must_include": ["증강"], "route": "docs"}
-{"id": "s24", "q": "엣지 서비스가 사건의 searchStart와 searchEnd를 매칭에 쓰지 않는 이유는?", "gold_repo": "yopar-edge-service", "must_include": ["녹화"], "route": "docs"}
-{"id": "s25", "q": "AGV 격자 위치 추정에 쓴 두 데이터셋의 이미지 장수는?", "gold_repo": "agv-grid-localization", "must_include": ["383", "40"], "route": "docs"}
+{"id": "d1", "q": "내 프로젝트 중 주 언어가 Python이 아닌 저장소를 전부 알려줘", "gold_repo": null, "must_include": ["Algorithm-training", "digital-modulation-ber", "vanilla-rnn-fpga-quantization"], "route": "db"}
+{"id": "d2", "q": "증명사진 카드 프로젝트에서 처리 위치가 GPU인 카드 종류는 무엇무엇이야?", "gold_repo": "portrait-restyle", "must_include": ["컨셉", "웹툰"], "route": "db"}
+{"id": "d3", "q": "README에 적힌 기간 기준으로 가장 오래 진행한 프로젝트는 뭐야?", "gold_repo": "numerical-methods", "must_include": ["numerical-methods"], "route": "db"}
+{"id": "d4", "q": "기간이 기록된 프로젝트 중 진행 기간이 가장 짧았던 건 어느 거야?", "gold_repo": "outlier-linear-regression", "must_include": ["outlier-linear-regression"], "route": "db"}
+{"id": "d5", "q": "2025년에 시작한 프로젝트를 전부 알려줘", "gold_repo": null, "must_include": ["classical-uav-restoration", "outlier-linear-regression", "rasr-region-adaptive-sr", "robust-image-classification"], "route": "db"}
+{"id": "d6", "q": "같은 날 시작한 프로젝트 두 개는 뭐고, 그날이 언제야?", "gold_repo": null, "must_include": ["classical-uav-restoration", "outlier-linear-regression", "2025-04-08"], "route": "db"}
+{"id": "d7", "q": "GitHub 저장소를 가장 먼저 만든 프로젝트는 무엇이고 생성일은 언제야?", "gold_repo": "Algorithm-training", "must_include": ["Algorithm-training", "2026-07-30"], "route": "db"}
+{"id": "d8", "q": "가장 최근에 push한 저장소는 어느 거야?", "gold_repo": "classical-uav-restoration", "must_include": ["classical-uav-restoration"], "route": "db"}
+{"id": "d9", "q": "topics에 super-resolution이 붙은 저장소를 모두 알려줘", "gold_repo": null, "must_include": ["classical-uav-restoration", "rasr-region-adaptive-sr"], "route": "db"}
+{"id": "d10", "q": "AGV 격자 위치 추정 저장소는 언제 만들었고 마지막 push는 언제야?", "gold_repo": "agv-grid-localization", "must_include": ["2026-08-11", "2026-08-17"], "route": "db"}
+{"id": "d11", "q": "고전적 UAV 복원에서 최종 조합과 기준선의 4×4 패치 PSNR 512는 각각 얼마였어?", "gold_repo": "classical-uav-restoration", "must_include": ["27.49", "24.67"], "route": "db"}
+{"id": "d12", "q": "내 프로젝트 표 전체에서 PSNR이 가장 높게 나온 결과는 어떤 조건·방법이고 값은 얼마야?", "gold_repo": "classical-uav-restoration", "must_include": ["impulse 0.05", "median", "39.88"], "route": "db"}
+{"id": "d13", "q": "RASR 두 단계 복원에서 평균 PSNR이 31dB 이상인 파이프라인을 전부 알려줘", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["+ IMCNN", "31.53", "+ MRIMCNN", "31.57"], "route": "db"}
+{"id": "d14", "q": "RASR 복원 모델 중 파라미터가 가장 적은 모델은 뭐고, 파라미터 수와 평균 PSNR은?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["SRCNN", "56K", "28.21"], "route": "db"}
+{"id": "d15", "q": "RNN 균일 포맷 스윕에서 fixed acc가 0.675 이상 나온 Q포맷을 전부 알려줘", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["Q3.13", "Q4.12", "Q5.11", "Q7.9"], "route": "db"}
+{"id": "d16", "q": "tanh 룩업 테이블 설정 중 일치율이 0.99 아래로 떨어진 설정은 뭐야?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["sat=4, step=4096", "sat=1, step=64"], "route": "db"}
+{"id": "d17", "q": "RNN 가중치 텐서 중 absmax가 가장 큰 텐서와 그 값은?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["Wx", "5.3176"], "route": "db"}
+{"id": "d18", "q": "RNN FPGA 남은 작업 중 Vivado를 써야 하는 단계를 전부 알려줘", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["블록 디자인", "논리 합성", "구현 (P&R)", "비트스트림 + 보드 검증"], "route": "db"}
+{"id": "d19", "q": "깊이 영상 RGB 매핑에서 깨끗한 채널 MSE가 가장 큰 방법과 그 값은?", "gold_repo": "depth16-rgb-mapping", "must_include": ["byte split", "21,700"], "route": "db"}
+{"id": "d20", "q": "강건한 이미지 분류에서 노이즈 비율 0.25일 때 정확도가 가장 높은 복원 방법과 정확도는?", "gold_repo": "robust-image-classification", "must_include": ["픽셀 규칙", "0.6453"], "route": "db"}
+{"id": "d21", "q": "디지털 변조 실험에서 파일럿 추정 손실(pilot penalty)이 가장 컸던 채널·변조와 그 값은?", "gold_repo": "digital-modulation-ber", "must_include": ["Rayleigh", "QPSK", "0.53"], "route": "db"}
+{"id": "d22", "q": "딥페이크 탐지 조건 C(η = 0)에서 정확도가 50% 미만인 생성기를 전부 알려줘", "gold_repo": "tre-deepfake-detection", "must_include": ["biggan", "glide"], "route": "db"}
+{"id": "d23", "q": "블록 DCT JPEG에서 rate가 4 bpp 미만인 QP 중 MSE가 가장 낮은 경우의 MSE와 rate는?", "gold_repo": "jpeg-dct-compression", "must_include": ["57.6", "3.65"], "route": "db"}
+{"id": "d24", "q": "수치해석 분포 회귀에서 R² 평균이 가장 높은 모델과 그 값은?", "gold_repo": "numerical-methods", "must_include": ["sigmoid", "0.9934"], "route": "db"}
+{"id": "d25", "q": "이상치 회귀 최종 평가에서 Oracle을 빼면 weight error 평균이 가장 작은 방법의 평균과 중앙값은?", "gold_repo": "outlier-linear-regression", "must_include": ["0.0187", "0.0172"], "route": "db"}
+{"id": "s1", "q": "AGV 격자 위치 추정 모델은 Jetson Nano에서 어떤 형식으로 돌렸어?", "gold_repo": "agv-grid-localization", "must_include": ["ONNX", "opset 12", "onnxruntime"], "route": "docs"}
+{"id": "s2", "q": "AGV 프로젝트에서 검출한 물체가 격자의 몇 번 칸에 있는지는 어떻게 정했어?", "gold_repo": "agv-grid-localization", "must_include": ["box center", "perspective transform"], "route": "docs"}
+{"id": "s3", "q": "고전적 UAV 복원 실험에 쓴 영상과 튜닝·평가 분할은 어떻게 돼?", "gold_repo": "classical-uav-restoration", "must_include": ["DIV2K", "20장", "80장"], "route": "docs"}
+{"id": "s4", "q": "대역폭 제한 복원에서 단계마다 전송받는 패치 픽셀 수는 얼마로 잡았어?", "gold_repo": "classical-uav-restoration", "must_include": ["2¹⁴"], "route": "docs"}
+{"id": "s5", "q": "16비트 깊이 영상을 굳이 RGB로 담으려고 한 이유가 뭐야?", "gold_repo": "depth16-rgb-mapping", "must_include": ["8-bit RGB"], "route": "docs"}
+{"id": "s6", "q": "깊이 매핑 프로젝트에서 MSE를 float64로 계산한 이유는?", "gold_repo": "depth16-rgb-mapping", "must_include": ["uint16", "65535"], "route": "docs"}
+{"id": "s7", "q": "디지털 변조 시뮬레이션을 돌리려면 MATLAB 버전과 툴박스가 뭐가 필요해?", "gold_repo": "digital-modulation-ber", "must_include": ["R2024b", "Communications Toolbox"], "route": "docs"}
+{"id": "s8", "q": "낮은 Eb/No(약 2 dB 이하)에서 길쌈부호를 쓰면 오히려 손해인 이유는?", "gold_repo": "digital-modulation-ber", "must_include": ["rate-1/2 energy penalty"], "route": "docs"}
+{"id": "s9", "q": "JPEG/DCT 압축 실험에 쓴 테스트 이미지는 어떤 거야?", "gold_repo": "jpeg-dct-compression", "must_include": ["food", "512x512"], "route": "docs"}
+{"id": "s10", "q": "서브밴드 변환 복원이 비트 단위로 정확하다고 보장되지 않는 이유는?", "gold_repo": "jpeg-dct-compression", "must_include": ["// 2", "odd values"], "route": "docs"}
+{"id": "s11", "q": "수치해석 선형 연립방정식 실험에서 Gauss-Seidel이 전부 nan으로 끝난 이유는?", "gold_repo": "numerical-methods", "must_include": ["spectral radius", "6.830e+04"], "route": "docs"}
+{"id": "s12", "q": "근 찾기 실험에서 Newton-Raphson은 몇 번째 반복부터 정확한 근에 도달했어?", "gold_repo": "numerical-methods", "must_include": ["iteration 7", "x = 3.0"], "route": "docs"}
+{"id": "s13", "q": "이상치 회귀의 제안 방법은 inlier를 어떤 기준으로 다시 고르고, 매 cycle 무엇으로 학습해?", "gold_repo": "outlier-linear-regression", "must_include": ["σ_MAD", "Adam"], "route": "docs"}
+{"id": "s14", "q": "이상치 회귀 프로젝트에서 비교하지 않은 로버스트 회귀 기법은 뭐야?", "gold_repo": "outlier-linear-regression", "must_include": ["Huber", "RANSAC"], "route": "docs"}
+{"id": "s15", "q": "인물 카드 프로젝트에서 BiRefNet 누끼를 EC2가 아니라 GPU 서비스로 모은 이유는?", "gold_repo": "portrait-restyle", "must_include": ["7.4GB", "OOM"], "route": "docs"}
+{"id": "s16", "q": "웹툰풍 LoRA는 어떤 데이터로 몇 스텝 학습했어?", "gold_repo": "portrait-restyle", "must_include": ["7쌍", "1500스텝"], "route": "docs"}
+{"id": "s17", "q": "RASR에서 영역 선택 모델을 MRIMCNN이 아니라 IMCNN으로 최종 선택한 이유는?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["0.04dB", "3배"], "route": "docs"}
+{"id": "s18", "q": "RASR 모델들은 어떤 데이터셋 몇 장으로 학습하고 몇 장으로 평가했어?", "gold_repo": "rasr-region-adaptive-sr", "must_include": ["COCO", "3,000장", "500장"], "route": "docs"}
+{"id": "s19", "q": "대역폭 제약 이미지 분류는 어떤 모델로 어떤 클래스를 분류했어?", "gold_repo": "robust-image-classification", "must_include": ["ResNet-18", "Tiger", "Zebra"], "route": "docs"}
+{"id": "s20", "q": "TRE 조건 A에서 보인 약한 in-domain 신호의 정체는 뭐였어?", "gold_repo": "tre-deepfake-detection", "must_include": ["non-determinism", "2.7e-4"], "route": "docs"}
+{"id": "s21", "q": "딥페이크 탐지에서 두 번째 inverter로 원래 쓰려던 모델을 못 쓴 이유는?", "gold_repo": "tre-deepfake-detection", "must_include": ["SD 2.1", "gated"], "route": "docs"}
+{"id": "s22", "q": "tanh 룩업 테이블 크기를 줄이려고 쓴 세 가지 방법은?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["대칭", "자르기", "보간"], "route": "docs"}
+{"id": "s23", "q": "타깃 FPGA 칩을 무료 Vivado로 쓸 수 없으면 어떻게 하라고 했어?", "gold_repo": "vanilla-rnn-fpga-quantization", "must_include": ["WebPACK", "xc7a200tfbg484-2"], "route": "docs"}
+{"id": "s24", "q": "YOPAR에서 같은 사람의 속성 결과는 몇 프레임 재사용하고, 후보는 어떤 점수 기준으로 골라?", "gold_repo": "yopar-attribute-recognition", "must_include": ["12프레임", "0.25"], "route": "docs"}
+{"id": "s25", "q": "YOPAR 서비스에 PAR 가중치 중 어떤 버전을 왜 썼어?", "gold_repo": "yopar-attribute-recognition", "must_include": ["v4", "자체 사진 15장"], "route": "docs"}
